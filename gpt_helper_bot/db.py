@@ -60,6 +60,3 @@ def get_data(user_id: str):
     sql = '''SELECT * FROM users WHERE user_id = ?'''
     conn.close()
     return cursor.execute(sql, user_id)
-
-
-reset_data('197852')
