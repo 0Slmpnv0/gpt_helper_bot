@@ -60,3 +60,14 @@ def get_data(user_id: str):
     sql = '''SELECT * FROM users WHERE user_id = ?'''
     conn.close()
     return cursor.execute(sql, user_id)
+
+
+def select_from_users(param='*', where: tuple = ''):
+    conn = sqlite3.connect('users.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    sql = '''SELECT ? FROM users'''
+    if where:
+        sql += ' WHERE ? = ?'
+    params = tuple(param) + where
+    return cursor.execute(sql, params)
