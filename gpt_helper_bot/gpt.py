@@ -1,5 +1,6 @@
 import requests
 from transformers import AutoTokenizer
+import db
 
 
 def check_tokens(text, max_tokens=2048):
@@ -8,7 +9,12 @@ def check_tokens(text, max_tokens=2048):
 
 
 class Conversation:
-    def __init__(self, api_link, header, model='whatever', max_tokens: int = 2048, temperature=1):
+    def __init__(self,
+                 api_link,
+                 header,
+                 model='whatever',
+                 max_tokens: int = 2048,
+                 temperature=1):
         self.api_link = api_link
         self.header = header
         self.model = model
@@ -17,15 +23,14 @@ class Conversation:
         self.max_tokens = max_tokens
 
     def save_context(self, uid):
-        data = load_data()
-        data[str(uid)] = self.context
-        save_data(data)
+        db.update_data(uid, context=self.context)
 
     def load_context(self, uid):
-        data = load_data()
-        self.context = data[str(uid)]
+        self.context = db.get_data(uid)['context']
 
-    def conv(self, question, system_content, assistant_content='Решим задачу по шагам:'):
+    def conv(self, question, level, subject, assistant_content='Решим задачу по шагам:'):
+        system_content = (f'Ты - бот-помошник, который дает ответы по предмету: {subject}. Объясняй шаги как для '
+                          f'человека с уровнем знаний: {level}')
         user_content = question
         if not check_tokens(user_content):
             return ['exc', 'Текст слишком большой. Попробуйте его сократить']
@@ -36,7 +41,6 @@ class Conversation:
         else:
             if not self.context:
                 return ['exc', 'Вы не можете попросить нейросеть продолжить, поскольку она еще ничего не ответила']
-
 
         resp = requests.post(
             self.api_link,
@@ -61,5 +65,3 @@ class Conversation:
                     resp.status_code]
         self.context += result
         return ['succ', result]
-
-

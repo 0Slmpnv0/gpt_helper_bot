@@ -19,19 +19,19 @@ def init_users():
     cursor.close()
 
 
-def insert_data(user_id: str, subject: str = '', difficulty: str = '', admin: int = 0, context: str = ''):
+def insert_data(user_id: str, subject: str = '', level: str = '', admin: int = 0, context: str = ''):
     conn = sqlite3.connect('users.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     sql = '''INSERT 
             INTO users (user_id, context, subject, difficulty, admin) 
             VALUES (?, ?, ?, ?, ?)'''
-    cursor.execute(sql, (user_id, context, subject, difficulty, str(admin)))
+    cursor.execute(sql, (user_id, context, subject, level, str(admin)))
     conn.commit()
     cursor.close()
 
 
-def update_data(user_id: str, subject: str = '', difficulty: str = '', admin: int = 0, context: str = ''):
+def update_data(user_id: str, subject: str = '', level: str = '', admin: int = 0, context: str = ''):
     conn = sqlite3.connect('users.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -43,14 +43,14 @@ def update_data(user_id: str, subject: str = '', difficulty: str = '', admin: in
                 admin = ? 
             WHERE
                 user_id = ?'''
-    cursor.execute(sql, (context, subject, difficulty, admin, user_id))
+    cursor.execute(sql, (context, subject, level, admin, user_id))
     conn.commit()
     conn.close()
 
 
 # Сделал лишнюю функцию для читабельности и красоты. Не знаю плохо это или хорошо, но удобно
 def reset_data(user_id: str):
-    update_data(user_id, subject='', difficulty='', context='')
+    update_data(user_id, subject='', level='', context='')
 
 
 def get_data(user_id: str):
