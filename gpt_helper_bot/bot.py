@@ -2,16 +2,14 @@ from telebot import async_telebot
 import telebot.types
 import asyncio
 import dotenv
-from utils import Conversation, save_data, load_data
+from gpt import Conversation
 import time
+from db import init_users, insert_data, update_data, reset_data, get_data
 
 
-data: dict[str: str] = load_data()
-logs: dict = load_data('debug')
 telegram_token = dotenv.get_key('.env', 'TELEGRAM_BOT_TOKEN')
 bot = async_telebot.AsyncTeleBot(telegram_token)
 conversations: dict[str: Conversation] = {}
-admins = load_data('admin')
 
 
 for uid in data:

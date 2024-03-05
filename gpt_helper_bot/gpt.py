@@ -1,38 +1,10 @@
 import requests
-import json
 from transformers import AutoTokenizer
 
 
 def check_tokens(text, max_tokens=2048):
     tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
     return len(tokenizer.encode(text)) < max_tokens
-
-
-def load_data(data_type: str = 'users'):
-    if data_type == "debug":
-        path = 'debug.json'
-    elif data_type == "admin":
-        path = 'admins.json'
-    elif data_type == "users":
-        path = 'users.json'
-    else:
-        raise ValueError("Wrong data type")
-
-    try:
-        with open(path, "r", encoding="utf-8") as file:
-            return json.load(file)
-    except:
-        return {}
-
-
-def save_data(user_data: dict, data_type: str = ''):
-    if data_type == "debug":
-        path = 'debug.json'
-    else:
-        path = 'users.json'
-
-    with open(path, 'w', encoding='utf-8') as file:
-        json.dump(user_data, file, indent=2, ensure_ascii=False)
 
 
 class Conversation:
