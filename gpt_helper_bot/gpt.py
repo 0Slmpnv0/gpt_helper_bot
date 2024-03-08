@@ -22,16 +22,20 @@ class Conversation:
         self.temperature = temperature
         self.max_tokens = max_tokens
 
-    def save_context(self, uid):
-        db.update_data(uid, context=self.context)
+    def save_context(self, uid: int):
+        db.update_context(uid, context=self.context)
 
     def load_context(self, uid):
-        self.context = db.get_data(uid)['context']
+        res = db.get_user_data(uid)
+        if res:
+            self.context = res['context']
 
     def conv(self, question, level, subject, assistant_content='Решим задачу по шагам:'):
         system_content = (f'Ты - бот-помошник, который дает ответы по предмету: {subject}. Объясняй шаги как для '
                           f'человека с уровнем знаний: {level}')
         user_content = question
+        if subject not in ['Математика', 'Программирование']:
+            assistant_content = 'Конечно. Начнем рассуждение:'
         if not check_tokens(user_content):
             return ['exc', 'Текст слишком большой. Попробуйте его сократить']
 
