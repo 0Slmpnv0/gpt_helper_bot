@@ -4,7 +4,6 @@ import dotenv
 from gpt import Conversation
 import db
 import logging
-from icecream import ic
 
 db.init_users()
 logging.basicConfig(filename='bot.log', level=logging.DEBUG)
@@ -17,7 +16,6 @@ subjects = ['Философия', 'Математика', 'Русский язы
 levels = ['Начальный', 'Продвинутый', 'Профессиональный']
 
 users = db.execute_query('''SELECT user_id, context FROM users''')
-ic(users)
 if users:
     for user in users:
         conversations[user['user_id']] = Conversation('http://localhost:1234/v1/chat/completions',
@@ -48,8 +46,6 @@ def start(message: Message):
                 'вопрос и получите ответ не нейросети! Чтобы попросить нейросеть продолжить напишите "продолжить". '
                 'регистр букв не учитывается. Пожалуйста, выберите предмет:')
         if not user:
-            ic(message.from_user.id)
-            ic(user)
             logging.debug(f'User {message.from_user.id} is not found in database. Creating new conversation')
             db.insert_data(message.from_user.id)
             conversations[str(message.from_user.id)] = Conversation('http://localhost:1234/v1/chat/completions',
@@ -83,7 +79,6 @@ def subject_handler(message: Message):
         bot.register_next_step_handler_by_chat_id(message.from_user.id, subject_handler)
     else:
         user = db.get_user_data(message.from_user.id)[0]
-        ic(user)
         if user['level']:
             bot.send_message(message.from_user.id, 'Отличный выбор! Теперь можете просто задать вопрос!')
             bot.register_next_step_handler_by_chat_id(message.chat.id, handle_question)
@@ -151,7 +146,6 @@ def handle_question(message: Message):
         handle_resets(message)
         return
     res = db.get_user_data(message.from_user.id)[0]
-    ic(res)
     resp = conversations[message.from_user.id].conv(question=message.text,
                                                     level=res['level'],
                                                     subject=res['subject'])

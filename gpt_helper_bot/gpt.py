@@ -1,6 +1,7 @@
 import requests
 from transformers import AutoTokenizer
 import db
+import logging
 
 
 def check_tokens(text, max_tokens=2048):
@@ -24,11 +25,13 @@ class Conversation:
 
     def save_context(self, uid: int):
         db.update_context(uid, context=self.context)
+        logging.debug(f'Saved context: {self.context} for uid: {uid}')
 
     def load_context(self, uid):
         res = db.get_user_data(uid)
         if res:
             self.context = res['context']
+            logging.debug(f'context found in db. Adding to Conversation: {self.context}')
 
     def conv(self, question, level, subject, assistant_content='Решим задачу по шагам:'):
         system_content = (f'Ты - бот-помошник, который дает ответы по предмету: {subject}. Объясняй шаги как для '
@@ -41,9 +44,11 @@ class Conversation:
 
         if user_content.lower() != "продолжить":
             self.context = ''
+            logging.debug(f'{user_content} != debug => context = ""')
 
         else:
             if not self.context:
+                logging.exception(f'Context to be continued not found')
                 return ['exc', 'Вы не можете попросить нейросеть продолжить, поскольку она еще ничего не ответила']
 
         resp = requests.post(
@@ -60,11 +65,13 @@ class Conversation:
                 "max_tokens": 2048
             }
         )
+        logging.debug(f'post request received successfully')
         if resp.status_code == 200 and 'choices' in resp.json():
             result = resp.json()['choices'][0]['message']['content']
             if result == "":
                 return ['succ', "Объяснение закончено"]
         else:
+            logging.error(f'GPT API ERROR: {resp.status_code}')
             return ['err', f'Не удалось получить ответ от нейросети. Код ошибки: {resp.status_code}',
                     resp.status_code]
         self.context += result
